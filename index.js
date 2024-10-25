@@ -1,21 +1,28 @@
 const API_KEY = "e8504189eb52af4453b8fbaafdc3adc9";
 
-const apiUrl =
-  "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
-
+const apiUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric&";
 const searchBox = document.querySelector(".search input");
 const searchBtn = document.querySelector(".search button");
 const weatherIcon = document.querySelector(".weather-icon");
 
-async function checkWeather(city) {
-  const response = await fetch(`${apiUrl}${city}&appid=${API_KEY}`);
+async function checkWeatherByCity(city) {
+  const response = await fetch(`${apiUrl}q=${city}&appid=${API_KEY}`);
+  displayWeather(response);
+}
 
-  if (response.status == 404) {
+async function checkWeatherByLocation(lat, lon) {
+  const response = await fetch(
+    `${apiUrl}lat=${lat}&lon=${lon}&appid=${API_KEY}`
+  );
+  displayWeather(response);
+}
+
+async function displayWeather(response) {
+  if (response.status === 404) {
     document.querySelector(".error").style.display = "block";
     document.querySelector(".weather").style.display = "none";
   } else {
     const data = await response.json();
-
     console.log(data);
 
     document.querySelector(".city").textContent = data.name;
@@ -47,5 +54,25 @@ async function checkWeather(city) {
 
 searchBtn.addEventListener("click", () => {
   const cityName = searchBox.value.trim();
-  checkWeather(cityName);
+  checkWeatherByCity(cityName);
 });
+
+function getLocationAndWeather() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        checkWeatherByLocation(latitude, longitude);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        document.querySelector(".error").textContent = "Location access denied";
+        document.querySelector(".error").style.display = "block";
+      }
+    );
+  } else {
+    console.error("Geolocation is not supported by this browser.");
+  }
+}
+
+window.onload = getLocationAndWeather;
