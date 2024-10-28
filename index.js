@@ -1,18 +1,39 @@
 const API_KEY = "e8504189eb52af4453b8fbaafdc3adc9";
-
-const apiUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric&";
+const apiUrl = "https://api.openweathermap.org/data/2.5/weather?";
 const searchBox = document.querySelector(".search input");
 const searchBtn = document.querySelector(".search button");
+const toggleUnitsBtn = document.getElementById("toggle-units");
 const weatherIcon = document.querySelector(".weather-icon");
 
+let units = localStorage.getItem("weatherUnits") || "metric";
+
+function updateUnitToggleText() {
+  const unitLabel = units === "metric" ? "°C" : "°F";
+  toggleUnitsBtn.textContent = `${unitLabel}`;
+}
+
+toggleUnitsBtn.addEventListener("click", () => {
+  units = units === "metric" ? "imperial" : "metric";
+  localStorage.setItem("weatherUnits", units);
+  updateUnitToggleText();
+
+  if (searchBox.value.trim()) {
+    checkWeatherByCity(searchBox.value.trim());
+  } else {
+    getLocationAndWeather();
+  }
+});
+
 async function checkWeatherByCity(city) {
-  const response = await fetch(`${apiUrl}q=${city}&appid=${API_KEY}`);
+  const response = await fetch(
+    `${apiUrl}q=${city}&units=${units}&appid=${API_KEY}`
+  );
   displayWeather(response);
 }
 
 async function checkWeatherByLocation(lat, lon) {
   const response = await fetch(
-    `${apiUrl}lat=${lat}&lon=${lon}&appid=${API_KEY}`
+    `${apiUrl}lat=${lat}&lon=${lon}&units=${units}&appid=${API_KEY}`
   );
   displayWeather(response);
 }
@@ -23,13 +44,13 @@ async function displayWeather(response) {
     document.querySelector(".weather").style.display = "none";
   } else {
     const data = await response.json();
-    console.log(data);
 
     document.querySelector(".city").textContent = data.name;
     document.querySelector(".temp").textContent =
-      Math.round(data.main.temp) + "°C";
+      Math.round(data.main.temp) + (units === "metric" ? "°C" : "°F");
     document.querySelector(".humidity").textContent = data.main.humidity + "%";
-    document.querySelector(".wind").textContent = data.wind.speed + " km/hr";
+    document.querySelector(".wind").textContent =
+      data.wind.speed + (units === "metric" ? " km/hr" : " mph");
 
     const weatherType = data.weather[0].main;
 
@@ -75,4 +96,7 @@ function getLocationAndWeather() {
   }
 }
 
-window.onload = getLocationAndWeather;
+window.onload = () => {
+  updateUnitToggleText();
+  getLocationAndWeather();
+};
