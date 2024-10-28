@@ -1,7 +1,7 @@
 const API_KEY = "e8504189eb52af4453b8fbaafdc3adc9";
 const apiUrl = "https://api.openweathermap.org/data/2.5/weather?";
 const searchBox = document.querySelector(".search input");
-const searchBtn = document.querySelector(".search button");
+const searchBtn = document.querySelector(".search-btn");
 const toggleUnitsBtn = document.getElementById("toggle-units");
 const weatherIcon = document.querySelector(".weather-icon");
 
